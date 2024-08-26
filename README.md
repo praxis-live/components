@@ -1,28 +1,28 @@
 # Custom Components
 
-SubGraph (.pxg) files are a way of reusing and sharing custom components or groups of components for use with [Praxis LIVE](http://www.praxislive.org)
+SubGraph (.pxg) files are a way of reusing and sharing custom components or groups of components for use with [PraxisLIVE](http://www.praxislive.org)
 
 ## Usage
 
-Download the [latest zip file](https://github.com/praxis-live/pxg/archive/master.zip) and extract the contents. Drag .pxg files into your patch from the File Browser tab, or import them into your palette (choose `Import` from the popup menu on palette categories).
+The components here can be automatically downloaded and installed into the IDE palette from the IDE dashboard.
+
+Alternatively, download the zip from the [releases page](https://github.com/praxis-live/components/releases) and extract the contents. Drag .pxg files into your patch from the File Browser tab, or import them into your palette (choose `Import` from the popup menu on palette categories).
 
 ## Components
 
-Under active development - lots more to come! Components marked experimental may not be well tested or fully functional.
-
 ### Core
 
-Components that can be used in any graph (audio, video, tinkerforge, etc.).
+Components that can be used in any graph (audio, video, data, custom, etc.).
 
 * `seconds.pxg` - output running time in seconds.
-* `array-map.pxg` (experimental) - map a range from 0 to 1 to values in an array.
-* `normalize.pxg` (experimental) - normalize incoming signals to between 0 and 1.
+* `array-map.pxg` - map a range from 0 to 1 to values in an array.
+* `normalize.pxg` - normalize incoming signals to between 0 and 1.
 
 ### Data
 
-Components that can be used in any graph, but _should_ really only be used in a generic data patch (`root:data`).
+Components that can be used in a data graph.
 
-* `file-listener.pxg` (experimental) - given an absolute path to a (text) file, will load and send the contents, then listen and reload/resend on file changes. Can be connected to `core:routing:send` to send updated code to another component.
+* `file-listener.pxg` - given an absolute path to a (text) file, will load and send the contents, then listen and reload/resend on file changes. Can be connected to `core:routing:send` to send updated code to another component.
 
 ### Audio
 
@@ -40,7 +40,7 @@ Components that can be used in any video graph.
 
 * `colourbalance.pxg` - alter the rgb balance of a video input.
 * `xform.pxg` - 2D transform (translate, scale, rotate) a video input.
-* `framerate.pxg` (experimental) - measure framerate of video passing through component.
+* `framerate.pxg` - measure framerate of video passing through component.
 
 ### VideoGL
 
@@ -53,19 +53,13 @@ Video components that can only be used with the OpenGL renderer.
 * `fx-pinch.pxg` - pinch image effect.
 * `gl-filter-base.pxg` - GLSL filter base - add to graph and edit fragment (GLSL) and code (Java/Processing).
 * `gl-gradients.pxg` - simple mouse reactive OpenGL source example. GLSL code from http://weworkweplay.com/play/introduction-to-glsl-and-fragment-pixel-shaders/
-* `glsl-io-transitions.pxg` (experimental) - range of video transition effects between two sources, ported from GLSL.io
+* `glsl-io-transitions.pxg`  - range of video transition effects between two sources, ported from https://gl-transitions.com/
 * `gl-source.pxg` - GLSL source base = add to graph and edit fragment (GLSL) and code (Java/Processing). Supports most shaders from GLSL Sandbox directly.
 * `gl-svg.pxg` - SVG viewer (and example of SVG loading).
 * `gl-text.pxg` - text component (and example of text rendering). **Requires a .ttf font file to be set.**
 * `isf-edges.pxg` edges video filter ported from https://www.interactiveshaderformat.com/sketches/184
 * `isf-solarize.pxg` - solarize video filter ported from https://www.interactiveshaderformat.com/sketches/390
 * `xform-3d.pxg` - translate and rotate a video input in 3D space.
-
-### TinkerForge
-
-TinkerForge binding components.
-
-* `rotary-encoder.pxg` - binding for the rotary encoder bricklet.
 
 ## Create your own SubGraph (.pxg) file
 
