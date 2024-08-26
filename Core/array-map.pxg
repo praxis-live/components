@@ -1,8 +1,6 @@
-#%praxis.version 5.0.0-beta-1
 @ ./array-map core:custom {
-  #%graph.x 0
-  #%graph.y 0
-  .code "
+  .meta [map graph.x 0 graph.y 0]
+  .code {
 
     @P(1) @Config.Port(false)
     PArray values;
@@ -14,21 +12,21 @@
     int lastIdx;
     
     @Override
-    public void init() \{
+    public void init() {
         lastIdx = -1;
         in.link(this::mapValue);
-    \}
+    }
 
-    void mapValue(double value) \{
-        if (values.isEmpty()) \{
+    void mapValue(double value) {
+        if (values.isEmpty()) {
             return;
-        \}
+        }
         int idx = (int) (value * (values.size() - 1));
-        if (idx == lastIdx) \{
+        if (idx == lastIdx) {
             return;
-        \}
+        }
         lastIdx = idx;
         out.send(values.get(idx));
-    \}
-"
+    }
+}
 }

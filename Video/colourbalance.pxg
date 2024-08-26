@@ -1,7 +1,6 @@
 @ ./colourbalance video:custom {
-  #%graph.x 0
-  #%graph.y 0
-  .code "
+  .meta [map graph.x 0 graph.y 0]
+  .code {
 
     @In(1) PImage in;
     
@@ -13,14 +12,13 @@
     double blue;
 
     @Override
-    public void draw() \{
+    public void draw() {
         copy(in);
         release(in);
         noStroke();
         blendMode(MULTIPLY);
         fill(red * 255, green * 255, blue * 255);
         rect(0, 0, width, height);
-    \}
-"
+    }
 }
-
+}

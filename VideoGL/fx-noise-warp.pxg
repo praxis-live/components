@@ -1,7 +1,6 @@
 @ ./noise-warp video:gl:p3d {
-  #%graph.x 0
-  #%graph.y 0
-  .code "
+  .meta [map graph.x 0 graph.y 0]
+  .code {
 
     @P(1) @Type.Number(min = 0, max = 1, def = 0.1)
     double amplitude;
@@ -12,15 +11,15 @@
     @P(100)
     Property _time;
     
-    void updateUniforms() \{
-        if (!_time.isAnimating()) \{
+    void updateUniforms() {
+        if (!_time.isAnimating()) {
             _time.set(0).to(86400).in(86400);
-        \}
-        shader.set(\"time\", d(_time));
-        shader.set(\"amplitude\", amplitude);
-        shader.set(\"speed\", speed);
-        shader.set(\"frequency\", frequency);
-    \}
+        }
+        shader.set("time", D(_time));
+        shader.set("amplitude", amplitude);
+        shader.set("speed", speed);
+        shader.set("frequency", frequency);
+    }
 
     
     // BOILERPLATE BELOW
@@ -28,35 +27,35 @@
     PImage in;
     @P(0)
     @Type.String(mime = GLSL_FRAGMENT_MIME, template = DEFAULT_FRAGMENT_SHADER)
-    @OnChange(\"updateShader\")
+    @OnChange("updateShader")
     @Config.Port(false)
     String fragment;
 
     PShader shader;
 
     @Override
-    public void setup() \{
+    public void setup() {
         updateShader();
-    \}
+    }
 
     @Override
-    public void draw() \{
-        if (shader == null) \{
+    public void draw() {
+        if (shader == null) {
             shader = createShader(DEFAULT_VERTEX_SHADER,
                     fragment.isEmpty() ? DEFAULT_FRAGMENT_SHADER : fragment);
-        \}
+        }
         shader(shader);
         updateUniforms();
         image(in, 0, 0);
         resetShader();
-    \}
+    }
 
-    void updateShader() \{
+    void updateShader() {
         shader = null;
-    \}
+    }
 
-"
-  .fragment "
+}
+  .fragment {
 varying vec4 vertTexCoord;
 uniform sampler2D texture;
 uniform float time;
@@ -75,25 +74,25 @@ uniform float frequency;
             // https://github.com/ashima/webgl-noise
             //
 
-            vec3 mod289(vec3 x) \{
+            vec3 mod289(vec3 x) {
              return x - floor(x * (1.0 / 289.0)) * 289.0;
-            \}
+            }
 
-            vec4 mod289(vec4 x) \{
+            vec4 mod289(vec4 x) {
              return x - floor(x * (1.0 / 289.0)) * 289.0;
-            \}
+            }
 
-            vec4 permute(vec4 x) \{
+            vec4 permute(vec4 x) {
              return mod289(((x*34.0)+1.0)*x);
-            \}
+            }
 
             vec4 taylorInvSqrt(vec4 r)
-            \{
+            {
                 return 1.79284291400159 - 0.85373472095314 * r;
-            \}
+            }
                                              
             float snoise(vec3 v)
-            \{
+            {
                 const vec2 C = vec2(1.0/6.0, 1.0/3.0) ;
                 const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
                 
@@ -165,16 +164,16 @@ uniform float frequency;
                 m = m * m;
                 return 42.0 * dot( m*m, vec4( dot(p0,x0), dot(p1,x1),
                                              dot(p2,x2), dot(p3,x3) ) );
-            \}
+            }
             // end of noise functions
                                          
             void main()
-            \{
+            {
                 vec2 texCoords = vertTexCoord.st + vec2(
                     amplitude * (snoise(vec3(frequency * vertTexCoord.st.s, frequency * vertTexCoord.st.t, speed * time))),
                     amplitude * (snoise(vec3(frequency * vertTexCoord.st.s + 17.0, frequency * vertTexCoord.st.t, speed * time)))
                 );
                 vec2 pos = 0.5 - vertTexCoord.st;  
                 gl_FragColor = texture2D(texture, texCoords); 
-            \}"
+            }}
 }

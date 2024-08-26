@@ -1,7 +1,6 @@
 @ ./gl-svg video:gl:p2d {
-  #%graph.x 0
-  #%graph.y 0
-  .code "
+  .meta [map graph.x 0 graph.y 0]
+  .code {
 
     @P(1) @Config.Port(false) PShape svg;
     @P(2) @Type.Number(min=0, max=1, def=0.5) double x;
@@ -10,16 +9,16 @@
     @P(5) @Type.Number(min=-360, max=360, def=0) double rotation;
 
     @Override
-    public void draw() \{
-        if (svg == null) \{
+    public void draw() {
+        if (svg == null) {
             return;
-        \}
+        }
         translate(x*width, y*height);
         double svgWidth = svg.getWidth();
         double svgHeight = svg.getHeight();
         scale(scale * min(width/svgWidth, height/svgHeight));
         rotate(radians(rotation));
         shape(svg, -svg.getWidth()/2, -svg.getHeight()/2);
-    \}
-"
+    }
+}
 }

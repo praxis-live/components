@@ -1,22 +1,21 @@
 @ ./mono-kit audio:custom {
-  #%graph.x 0
-  #%graph.y 0
-  .code "
+  .meta [map graph.x 0 graph.y 0]
+  .code {
 
     @Out(1)
     AudioOut out;
     
-    @P(1) @OnChange(\"updateTables\") @Config.Port(false)
+    @P(1) @OnChange("updateTables") @Config.Port(false)
     AudioTable sample1;
-    @P(2) @OnChange(\"updateTables\") @Config.Port(false)
+    @P(2) @OnChange("updateTables") @Config.Port(false)
     AudioTable sample2;
-    @P(3) @OnChange(\"updateTables\") @Config.Port(false)
+    @P(3) @OnChange("updateTables") @Config.Port(false)
     AudioTable sample3;
-    @P(4) @OnChange(\"updateTables\") @Config.Port(false)
+    @P(4) @OnChange("updateTables") @Config.Port(false)
     AudioTable sample4;
-    @P(5) @OnChange(\"updateTables\") @Config.Port(false)
+    @P(5) @OnChange("updateTables") @Config.Port(false)
     AudioTable sample5;
-    @P(6) @OnChange(\"updateTables\") @Config.Port(false)
+    @P(6) @OnChange("updateTables") @Config.Port(false)
     AudioTable sample6;
 
     @T(1) Trigger play1;
@@ -45,7 +44,7 @@
     Gain g1, g2, g3, g4, g5, g6;
 
     @Override
-    public void setup() \{
+    public void init() {
         updateTables();
         link(
                 add(
@@ -66,23 +65,22 @@
         play5.link(pl5::play);
         play6.link(pl6::play);
         
-        level1.values().map(l -> l*l).link(g1::level);
-        level2.values().map(l -> l*l).link(g2::level);
-        level3.values().map(l -> l*l).link(g3::level);
-        level4.values().map(l -> l*l).link(g4::level);
-        level5.values().map(l -> l*l).link(g5::level);
-        level6.values().map(l -> l*l).link(g6::level);
-    \}
+        level1.doubles().map(l -> l*l).link(g1::level);
+        level2.doubles().map(l -> l*l).link(g2::level);
+        level3.doubles().map(l -> l*l).link(g3::level);
+        level4.doubles().map(l -> l*l).link(g4::level);
+        level5.doubles().map(l -> l*l).link(g5::level);
+        level6.doubles().map(l -> l*l).link(g6::level);
+    }
     
-    void updateTables() \{
+    void updateTables() {
         pl1.table(sample1);
         pl2.table(sample2);
         pl3.table(sample3);
         pl4.table(sample4);
         pl5.table(sample5);
         pl6.table(sample6);
-    \}
+    }
     
-"
 }
-
+}

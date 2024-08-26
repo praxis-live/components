@@ -1,7 +1,6 @@
 @ ./synth-base audio:custom {
-  #%graph.x 0
-  #%graph.y 0
-  .code "
+  .meta [map graph.x 0 graph.y 0]
+  .code {
 
     @Out(1) AudioOut out;
     
@@ -15,35 +14,34 @@
     @Inject Property envelope;
     
     @Override
-    public void setup() \{
+    public void setup() {
         osc.waveform(SINE);
         link(osc, amp, out);
         frequency.link(osc::frequency);
-        envelope.values().map(e -> e * e * gain).link(amp::level);
-    \}
+        envelope.doubles().map(e -> e * e * gain).link(amp::level);
+    }
 
-    @In(1) void note(String note) \{
-        if (note.isEmpty() || \"-\".equals(note)) \{
+    @In(1) void note(String note) {
+        if (note.isEmpty() || "-".equals(note)) {
             return;
-        \}
+        }
         int midi = noteToMidi(note);
-        if (midi > 0) \{
+        if (midi > 0) {
             noteOn(midi);
-        \} else \{
+        } else {
             noteOff();
-        \}
-    \}
+        }
+    }
     
-    void noteOn(int midi) \{
+    void noteOn(int midi) {
         frequency.set(midiToFrequency(midi));
         envelope.to(1).in(0.05);
-    \}
+    }
     
-    void noteOff() \{
+    void noteOff() {
         envelope.to(0).in(0.2);
-    \}
+    }
 
     
-"
 }
-
+}

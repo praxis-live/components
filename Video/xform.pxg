@@ -1,7 +1,6 @@
 @ ./xform video:custom {
-  #%graph.x 0
-  #%graph.y 0
-  .code "
+  .meta [map graph.x 0 graph.y 0]
+  .code {
 
     @In(1)
     PImage in;
@@ -19,7 +18,7 @@
     double scale;
 
     @Override
-    public void draw() \{
+    public void draw() {
         double w2 = width / 2;
         double h2 = height / 2;
         translate(
@@ -29,7 +28,6 @@
         rotate(radians(rotate));
         scale(scale);
         image(in, -w2, -h2);
-    \}
-"
+    }
 }
-
+}

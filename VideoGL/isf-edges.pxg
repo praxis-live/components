@@ -1,19 +1,17 @@
 @ ./edges video:gl:p2d {
-  #%graph.x 0
-  #%graph.y 0
-  #%graph.comment by VIDVOX\nCategories : Stylize
-  .code "
+  .meta [map graph.x 0 graph.y 0]
+  .code {
 
     @In(1)
     PImage in;
     @P(-2)
     @Type.String(mime = GLSL_VERTEX_MIME, template = DEFAULT_VERTEX_SHADER)
-    @OnChange(\"updateShader\")
+    @OnChange("updateShader")
     @Config.Port(false)
     String vertex;
     @P(-1)
     @Type.String(mime = GLSL_FRAGMENT_MIME, template = DEFAULT_FRAGMENT_SHADER)
-    @OnChange(\"updateShader\")
+    @OnChange("updateShader")
     @Config.Port(false)
     String fragment;
     
@@ -35,25 +33,25 @@
     PShader shader;
 
     @Override
-    public void setup() \{
+    public void setup() {
         updateShader();
-    \}
+    }
 
     @Override
-    public void draw() \{
+    public void draw() {
 
-        if (!_time.isAnimating()) \{
+        if (!_time.isAnimating()) {
             _time.set(0).to(86400).in(86400);
-        \}
+        }
         
-        if (shader == null) \{
+        if (shader == null) {
             shader = createShader(
                     vertex.isEmpty() ? DEFAULT_VERTEX_SHADER : vertex,
                     fragment.isEmpty() ? DEFAULT_FRAGMENT_SHADER : fragment);
-        \}
+        }
         shader(shader);
-        shader.set(\"RENDERSIZE\", (double) width, (double) height);
-        shader.set(\"TIME\", d(_time));
+        shader.set("RENDERSIZE", (double) width, (double) height);
+        shader.set("TIME", D(_time));
         updateUniforms();
         noStroke();
         beginShape(QUADS);
@@ -64,21 +62,21 @@
         endShape();
         resetShader();
 
-    \}
+    }
 
-    void updateUniforms() \{        
-        shader.set(\"inputImage\", in);
-        shader.set(\"intensity\", intensity);
-        shader.set(\"threshold\", threshold);
-        shader.set(\"sobel\", sobel);
-        shader.set(\"opaque\", opaque);
-    \}
+    void updateUniforms() {        
+        shader.set("inputImage", in);
+        shader.set("intensity", intensity);
+        shader.set("threshold", threshold);
+        shader.set("sobel", sobel);
+        shader.set("opaque", opaque);
+    }
 
-    void updateShader() \{
+    void updateShader() {
         shader = null;
-    \}
-"
-  .vertex "uniform mat4 transformMatrix;
+    }
+}
+  .vertex {uniform mat4 transformMatrix;
 uniform vec2 RENDERSIZE;
 
 attribute vec4 position;
@@ -87,11 +85,11 @@ attribute vec2 texCoord;
 varying vec2 isf_FragNormCoord;
 varying vec2 isf_FragCoord;
 
-void isf_vertShaderInit() \{
+void isf_vertShaderInit() {
   isf_FragNormCoord = texCoord;
   isf_FragCoord = position.xy;
   gl_Position = transformMatrix * position;
-\}
+}
 
 varying vec2 left_coord;
 varying vec2 right_coord;
@@ -104,9 +102,9 @@ varying vec2 leftb_coord;
 varying vec2 rightb_coord;
 
 
-void main() \{
+void main() {
 	isf_vertShaderInit();
-	vec2 texc = vec2(isf_FragNormCoord\[0\],isf_FragNormCoord\[1\]);
+	vec2 texc = vec2(isf_FragNormCoord[0],isf_FragNormCoord[1]);
 	vec2 d = 1.0/RENDERSIZE;
 	
 	left_coord = clamp(vec2(texc.xy + vec2(-d.x , 0)),0.0,1.0);
@@ -118,9 +116,9 @@ void main() \{
 	righta_coord = clamp(vec2(texc.xy + vec2(d.x , d.x)),0.0,1.0);
 	leftb_coord = clamp(vec2(texc.xy + vec2(-d.x , -d.x)),0.0,1.0);
 	rightb_coord = clamp(vec2(texc.xy + vec2(d.x , -d.x)),0.0,1.0);
-\}
-"
-  .fragment "uniform vec2 RENDERSIZE;
+}
+}
+  .fragment {uniform vec2 RENDERSIZE;
 uniform float TIME;
 
 uniform sampler2D inputImage;
@@ -144,12 +142,12 @@ varying vec2 leftb_coord;
 varying vec2 rightb_coord;
 
 float gray(vec4 n)
-\{
+{
 	return (n.r + n.g + n.b)/3.0;
-\}
+}
 
 void main()
-\{
+{
 
 	vec4 color = texture2D(inputImage, (inputImageMatrix * vec4(isf_FragNormCoord, 1.0, 1.0)).xy);
 	vec4 colorL = texture2D(inputImage, (inputImageMatrix * vec4(left_coord, 1.0, 1.0)).xy);
@@ -164,32 +162,32 @@ void main()
 
 	float gx = (0.0);
 	float gy = (0.0);
-	if (sobel)	\{
+	if (sobel)	{
 		gx = (-1.0 * gray(colorLA)) + (-2.0 * gray(colorL)) + (-1.0 * gray(colorLB)) + (1.0 * gray(colorRA)) + (2.0 * gray(colorR)) + (1.0 * gray(colorRB));
 		gy = (1.0 * gray(colorLA)) + (2.0 * gray(colorA)) + (1.0 * gray(colorRA)) + (-1.0 * gray(colorRB)) + (-2.0 * gray(colorB)) + (-1.0 * gray(colorLB));
-	\}
-	else	\{
+	}
+	else	{
 		gx = (-1.0 * gray(colorLA)) + (-1.0 * gray(colorL)) + (-1.0 * gray(colorLB)) + (1.0 * gray(colorRA)) + (1.0 * gray(colorR)) + (1.0 * gray(colorRB));
 		gy = (1.0 * gray(colorLA)) + (1.0 * gray(colorA)) + (1.0 * gray(colorRA)) + (-1.0 * gray(colorRB)) + (-1.0 * gray(colorB)) + (-1.0 * gray(colorLB));
-	\}
+	}
 
 	float bright = pow(gx*gx + gy*gy,0.5);
 	vec4 final = color * bright;
 	
 	//	if the brightness is below the threshold draw black
-	if (bright < threshold)	\{
+	if (bright < threshold)	{
 		if (opaque)
 			final = vec4(0.0, 0.0, 0.0, 1.0);
 		else
 			final = vec4(0.0, 0.0, 0.0, 0.0);
-	\}
-	else	\{
+	}
+	else	{
 		final = final * intensity;
 		if (opaque)
 			final.a = 1.0;
-	\}
+	}
 	
 	gl_FragColor = final;
-\}
-"
+}
+}
 }

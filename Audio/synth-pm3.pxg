@@ -1,7 +1,6 @@
 @ ./pm-synth audio:custom {
-  #%graph.x 0
-  #%graph.y 0
-  .code "
+  .meta [map graph.x 0 graph.y 0]
+  .code {
 
     @Out(1) AudioOut out;
     
@@ -37,42 +36,41 @@
     @Inject Property frequency, modEnv, ampEnv;
     
     @Override
-    public void setup() \{
+    public void init() {
         car.waveform(SAW);
         frequency.link(car::frequency);
         ampEnv.link(d -> amp.level( (d * d) * level) );
         lfoFrequency.link(lfo::frequency);
         lfoLevel.link(lfo::gain);
         link(car, modFn(add(mod, lfo), (m,c) -> sin( (m + c) * TWO_PI )), amp, out);
-    \}
+    }
 
     @Override
-    public void update() \{
-        mod.frequency(modRatio * d(frequency)).gain(d(modEnv) * modLevel);
-    \} 
+    public void update() {
+        mod.frequency(modRatio * D(frequency)).gain(D(modEnv) * modLevel);
+    } 
     
-    @In(1) void note(String note) \{
-        if (note.isEmpty() || \"-\".equals(note)) \{
+    @In(1) void note(String note) {
+        if (note.isEmpty() || "-".equals(note)) {
             return;
-        \}
+        }
         int midi = noteToMidi(note);
-        if (midi > 0) \{
+        if (midi > 0) {
             noteOn(midi);
-        \} else \{
+        } else {
             noteOff();
-        \}
-    \}
+        }
+    }
     
-    void noteOn(int midi) \{
+    void noteOn(int midi) {
         frequency.set(midiToFrequency(midi));
         modEnv.to(1, modSustain).in(modAttack, modDecay);
         ampEnv.to(1, sustain).in(attack, decay);
-    \}
+    }
     
-    void noteOff() \{
+    void noteOff() {
         ampEnv.to(0).in(release);
-    \}
+    }
       
-"
 }
-
+}

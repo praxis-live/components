@@ -1,7 +1,6 @@
 @ ./mixer-6s audio:custom {
-  #%graph.x 0
-  #%graph.y 0
-  .code "
+  .meta [map graph.x 0 graph.y 0]
+  .code {
 
     @In(1) AudioIn in1l;
     @In(2) AudioIn in1r;
@@ -36,7 +35,7 @@
     @UGen Gain g1l,g1r,g2l,g2r,g3l,g3r,g4l,g4r,g5l,g5r,g6l,g6r;
     
     @Override
-    public void setup() \{
+    public void init() {
         link(
             add(
                 link(in1l, g1l),
@@ -59,10 +58,10 @@
             ),
             out2
         );
-    \}
+    }
 
     @Override
-    public void update() \{
+    public void update() {
         g1l.level(mute1 ? 0 : level1);
         g1r.level(mute1 ? 0 : level1);
         g2l.level(mute2 ? 0 : level2);
@@ -75,6 +74,6 @@
         g5r.level(mute5 ? 0 : level5);
         g6l.level(mute6 ? 0 : level6);
         g6r.level(mute6 ? 0 : level6);
-    \}
-"
+    }
+}
 }

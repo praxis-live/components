@@ -1,15 +1,14 @@
 @ ./kaleidoscope video:gl:p2d {
-  #%graph.x 0
-  #%graph.y 0
-  .code "
+  .meta [map graph.x 0 graph.y 0]
+  .code {
 
     @P(1)
     @Type.Number(min = 0, max = 10, def = 1)
     double segments;
     
-    void updateUniforms() \{
-         shader.set(\"segments\", segments);
-    \}
+    void updateUniforms() {
+         shader.set("segments", segments);
+    }
 
     
     // BOILERPLATE BELOW
@@ -17,41 +16,41 @@
     PImage in;
     @P(0)
     @Type.String(mime = GLSL_FRAGMENT_MIME, template = DEFAULT_FRAGMENT_SHADER)
-    @OnChange(\"updateShader\")
+    @OnChange("updateShader")
     @Config.Port(false)
     String fragment;
 
     PShader shader;
 
     @Override
-    public void setup() \{
+    public void setup() {
         updateShader();
-    \}
+    }
 
     @Override
-    public void draw() \{
-        if (shader == null) \{
+    public void draw() {
+        if (shader == null) {
             shader = createShader(DEFAULT_VERTEX_SHADER,
                     fragment.isEmpty() ? DEFAULT_FRAGMENT_SHADER : fragment);
-        \}
+        }
         shader(shader);
         updateUniforms();
         image(in, 0, 0);
         resetShader();
-    \}
+    }
 
-    void updateShader() \{
+    void updateShader() {
         shader = null;
-    \}
+    }
 
-"
-  .fragment "//https://github.com/neilmendoza/ofxPostProcessing/blob/master/src/KaleidoscopePass.cpp
+}
+  .fragment {//https://github.com/neilmendoza/ofxPostProcessing/blob/master/src/KaleidoscopePass.cpp
 
 varying vec4 vertTexCoord;
 uniform sampler2D texture;
 uniform float segments;
              
-void main() \{
+void main() {
   vec2 uv =vertTexCoord.st;
   vec2 normed = 2.0 * uv - 1.0;
   float r = length(normed);
@@ -59,6 +58,5 @@ void main() \{
   theta *= segments;
   vec2 newUv = (vec2(r * cos(theta), r * sin(theta)) + 1.0) / 2.0;        
   gl_FragColor = texture2D(texture, newUv);
-\}"
+}}
 }
-
