@@ -1,0 +1,180 @@
+@ /midi root:custom {
+  .shared-code [map SHARED.AbstractMIDIComponent {package SHARED;
+
+import java.util.Set;
+import java.util.function.Consumer;
+import org.praxislive.code.userapi.Inject;
+import org.praxislive.code.userapi.Ref;
+import org.praxislive.core.code.CoreCodeDelegate;
+import javax.sound.midi.ShortMessage;
+
+public abstract class AbstractMIDIComponent extends CoreCodeDelegate {
+
+    @Ref.Subscribe
+    @Inject Ref<Set<Consumer<ShortMessage>>> source;
+
+    @Override
+    public void init() {
+        Consumer<ShortMessage> handler = this::onMessage;
+        source.bind(Set::add, Set::remove, handler);
+    }
+    
+    public abstract void onMessage(ShortMessage message);
+
+}} SHARED.ControllerComponent {package SHARED;
+
+import java.util.Optional;
+import org.praxislive.code.userapi.*;
+import org.praxislive.core.ControlAddress;
+import javax.sound.midi.ShortMessage;
+
+public class ControllerComponent extends AbstractMIDIComponent {
+
+    @P(1) @Type.Integer(min = 1, max = 16, def = 1) int channel;
+    @P(2) @Type.Integer(min = 0, max = 127, def = 1) int controller;
+    @P(3) @Type.Number(def = 0) double minimum;
+    @P(4) @Type.Number(def = 1) double maximum;
+    @P(5) Optional<ControlAddress> binding;
+    boolean learn;
+
+    @Override
+    public void onMessage(ShortMessage message) {
+        if (learn && message.getCommand() == ShortMessage.CONTROL_CHANGE) {
+            learn = false;
+            channel = message.getChannel() + 1;
+            controller = message.getData1();
+        }
+        if (binding.isPresent()
+                && message.getCommand() == ShortMessage.CONTROL_CHANGE
+                && (message.getChannel() + 1) == channel
+                && message.getData1() == controller) {
+            double value = ((message.getData2() / 127.0)
+                    * (maximum - minimum)) + minimum;
+            tell(binding.get(), value);
+        }
+    }
+    
+    @T void learn() {
+        learn = true;
+    }
+
+}
+}]
+  .code {import SHARED.ControllerComponent;
+import java.util.regex.Pattern;
+import javax.sound.midi.*;
+
+
+    @P(1) String device;
+    @P(2) boolean logLastMessage;
+    @P(3) @ReadOnly String foundDevices;
+    @P(4) @ReadOnly String lastMessage;
+    
+    @Ref.Publish
+    @Inject Ref<Set<Consumer<ShortMessage>>> components;
+    
+    @Persist MidiDevice midiDevice;
+    @Persist Transmitter transmitter;
+
+    @Proxy Receiver receiver = new Receiver() {
+        @Override
+        public void send(MidiMessage message, long timeStamp) {
+            if (message instanceof ShortMessage sm) {
+                onShortMessage(sm);
+            }
+        }
+
+        @Override
+        public void close() {
+        }
+    };
+    
+    @SupportedTypes(system = false,
+            custom = {
+                @CustomType(type = "midi:controller", base = ControllerComponent.class)
+            }
+    )
+    @DisplayTable(properties = {"channel", "controller", "binding"})
+    @Override
+    public void init() {
+        components.init(HashSet::new);
+    }
+
+    @Override
+    public void starting() {
+        lastMessage = "";
+        try {
+            midiDevice = getDevice(device);
+            transmitter = midiDevice.getTransmitter();
+            transmitter.setReceiver(receiver);
+            midiDevice.open();
+        } catch (MidiUnavailableException ex) {
+            log(ERROR, ex);
+        }
+    }
+
+    @Override
+    public void stopping() {
+        if (transmitter != null) {
+            transmitter.setReceiver(null);
+            transmitter.close();
+            transmitter = null;
+        }
+        if (midiDevice != null) {
+            midiDevice.close();
+            midiDevice = null;
+        }
+        lastMessage = "";
+    }
+    
+    private void onShortMessage(ShortMessage msg) {
+        components.ifPresent(s -> s.forEach(c -> c.accept(msg)));
+        if (logLastMessage) {
+            lastMessage = "Ch:" + (msg.getChannel() + 1) + " Cmd:" + msg.getCommand() +
+                    " Data1:" + msg.getData1() + " Data2:" + msg.getData2();
+        } else {
+            lastMessage = "";
+        }
+    }
+    
+    private MidiDevice getDevice(String device) throws MidiUnavailableException {
+        MidiDevice.Info[] infos = MidiSystem.getMidiDeviceInfo();
+        foundDevices = Stream.of(infos).map(i -> i.getName()).collect(Collectors.joining("\n"));
+        if (infos.length == 0) {
+            throw new MidiUnavailableException();
+        }
+        if (device == null || device.isEmpty()) {
+            for (MidiDevice.Info info : infos) {
+                MidiDevice dev = MidiSystem.getMidiDevice(info);
+                if (dev.getMaxTransmitters() != 0) {
+                    return dev;
+                }
+            }
+            throw new MidiUnavailableException();
+        } else {
+            Pattern pattern = Pattern.compile(Pattern.quote(device), Pattern.CASE_INSENSITIVE);
+            for (MidiDevice.Info info : infos) {
+                if (pattern.matcher(info.getName()).matches()) {
+                    MidiDevice dev = MidiSystem.getMidiDevice(info);
+                    if (dev.getMaxTransmitters() != 0) {
+                        return dev;
+                    }
+                }
+            }
+            for (MidiDevice.Info info : infos) {
+                if (pattern.matcher(info.getName()).find()) {
+                    MidiDevice dev = MidiSystem.getMidiDevice(info);
+                    if (dev.getMaxTransmitters() != 0) {
+                        return dev;
+                    }
+                }
+            }
+        }
+        throw new MidiUnavailableException();
+        
+    }
+    
+}
+  @ ./controller-1 midi:controller {
+  }
+}
